@@ -1,6 +1,6 @@
 <div class="row mb-3">
   <div class="col text-center">
-    <h1>Control de Arrestos</h1>
+    <h1>Control de Arrestos De la Escuela Regional de Informatica</h1>
   </div>
 </div>
 <div class="row justify-content-center">
