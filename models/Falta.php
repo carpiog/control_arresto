@@ -22,17 +22,32 @@ class Falta extends ActiveRecord {
         $this->fal_situacion = $args['fal_situacion'] ?? 1;
     }
 
-    public static function buscarTodos() {
-        $query = "SELECT f.*, 
-                        cf.cat_nombre as categoria_nombre,
-                        tf.tip_nombre as tipo_nombre,
-                        tf.tip_id as tipo_id
-                 FROM " . static::$tabla . " f 
-                 JOIN car_categoria_falta cf ON f.fal_categoria_id = cf.cat_id 
-                 JOIN car_tipo_falta tf ON cf.cat_tipo_id = tf.tip_id 
-                 WHERE f.fal_situacion = 1 
-                 ORDER BY tf.tip_id, cf.cat_nombre, f.fal_descripcion";
-        
-        return static::consultarSQL($query);
+    public static function buscarTodos($tipo = null) {
+        $query = "SELECT DISTINCT
+                    f.fal_id,
+                    f.fal_descripcion,
+                    f.fal_horas_arresto,
+                    f.fal_demeritos,
+                    cf.cat_nombre as categoria_nombre,
+                    tf.tip_nombre as tipo_nombre,
+                    tf.tip_id as tipo_id,
+                    CASE tf.tip_nombre 
+                        WHEN 'LEVE' THEN 1 
+                        WHEN 'GRAVE' THEN 2 
+                        WHEN 'GRAVISIMA' THEN 3 
+                    END as orden_tipo
+                FROM " . static::$tabla . " f 
+                JOIN car_categoria_falta cf ON f.fal_categoria_id = cf.cat_id 
+                JOIN car_tipo_falta tf ON cf.cat_tipo_id = tf.tip_id 
+                WHERE f.fal_situacion = 1";
+    
+        if ($tipo && $tipo !== 'TODAS') {
+            $query .= " AND tf.tip_nombre = '" . $tipo . "'";
+        }
+    
+        // Ordenar por ID para mantener un orden numérico consistente
+        $query .= " ORDER BY f.fal_id ASC";
+    
+        return static::fetchArray($query);
     }
 }

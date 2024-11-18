@@ -2,18 +2,19 @@ import { Toast } from "../funciones";
 import DataTable from "datatables.net-bs5";
 import { lenguaje } from "../lenguaje";
 
-// Elementos del DOM
-const tabla = document.getElementById('tablaFalta');
-const filtroTipo = document.getElementById('filtroTipo');
+// Obtener tipo de falta de la URL si existe
+const params = new URLSearchParams(window.location.search);
+const tipoFalta = params.get('tipo');
 
 // Inicializar DataTable
 const datatable = new DataTable('#tablaFalta', {
     language: lenguaje,
-    data: null,
+    pageLength: 25,
     columns: [
         {
             title: 'No.',
-            render: (data, type, row, meta) => meta.row + 1
+            data: 'fal_id',  // Usar fal_id en lugar del índice de fila
+            render: (data) => data // Mostrar directamente el ID
         },
         {
             title: 'Tipo',
@@ -24,7 +25,7 @@ const datatable = new DataTable('#tablaFalta', {
                     'GRAVE': 'badge bg-warning',
                     'GRAVISIMA': 'badge bg-danger'
                 };
-                return `<span class="${clases[data]}">${data}</span>`;
+                return data ? `<span class="${clases[data]}">${data}</span>` : '';
             }
         },
         {
@@ -46,102 +47,46 @@ const datatable = new DataTable('#tablaFalta', {
                     return 'BAJA';
                 }
             }
-        },
-        {
-            title: 'Acciones',
-            data: 'fal_id',
-            render: (data, type, row) => {
-                return `
-                    <button class='btn btn-danger btn-sm eliminar' data-id="${data}">
-                        <i class='bi bi-trash'></i> Dar de Baja
-                    </button>
-                `;
-            }
         }
     ],
-    order: [[1, 'asc'], [2, 'asc']],  // Ordenar por tipo y categoría
-    rowGroup: {
-        dataSrc: ['tipo_nombre', 'categoria_nombre']
-    }
+    order: [[0, 'asc']] // Ordenar por la primera columna (ID) de forma ascendente
 });
-
 // Función para buscar
 const buscar = async () => {
     try {
-        const url = "/control_arresto/API/falta/buscar";
+        const url = "/control_arresto/API/falta/buscar" + (tipoFalta ? `?tipo=${tipoFalta}` : '');
         const config = {
-            method: 'GET'
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'fetch'
+            }
         };
 
         const respuesta = await fetch(url, config);
-        const data = await respuesta.json();
-
-        datatable.clear();
         
-        if (data.datos) {
-            datatable.rows.add(data.datos).draw();
+        if (!respuesta.ok) {
+            throw new Error(`Error HTTP: ${respuesta.status}`);
+        }
+        
+        const data = await respuesta.json();
+        
+        if (data.codigo === 1 && Array.isArray(data.datos)) {
+            datatable.clear().rows.add(data.datos).draw();
+        } else {
+            Toast.fire({
+                icon: 'error',
+                title: data.mensaje || 'No se encontraron datos'
+            });
         }
 
     } catch (error) {
-        console.log(error);
+        console.error('Error en buscar:', error);
+        Toast.fire({
+            icon: 'error',
+            title: 'Error al cargar los datos'
+        });
     }
 };
-
-// Función para eliminar
-const eliminar = async (e) => {
-    const button = e.target.closest('button');
-    const id = button.dataset.id;
-
-    const result = await Swal.fire({
-        title: '¿Está seguro?',
-        text: "¿Desea dar de baja esta falta?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, dar de baja',
-        cancelButtonText: 'Cancelar'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            const body = new FormData();
-            body.append('fal_id', id);
-            const url = "/control_arresto/API/falta/eliminar";
-            const config = {
-                method: 'POST',
-                body
-            };
-
-            const respuesta = await fetch(url, config);
-            const data = await respuesta.json();
-
-            const { codigo, mensaje } = data;
-            let icon = codigo === 1 ? 'success' : 'error';
-
-            Toast.fire({
-                icon,
-                title: mensaje
-            });
-
-            if (codigo === 1) {
-                buscar();
-            }
-
-        } catch (error) {
-            console.log(error);
-        }
-    }
-};
-
-// Filtro por tipo
-filtroTipo.addEventListener('change', function() {
-    const tipo = this.value;
-    datatable.column(1).search(tipo).draw();
-});
-
-// Event Listeners
-datatable.on('click', '.eliminar', eliminar);
 
 // Cargar datos iniciales
 buscar();

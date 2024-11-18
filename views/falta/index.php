@@ -1,29 +1,24 @@
-<h1 class="text-center">Mantenimiento de Faltas</h1>
-
-<div class="row mb-3">
-    <div class="col-md-4">
-        <select id="filtroTipo" class="form-select">
-            <option value="">Todos los tipos</option>
-            <option value="LEVE">Faltas Leves</option>
-            <option value="GRAVE">Faltas Graves</option>
-            <option value="GRAVISIMA">Faltas Gravísimas</option>
-        </select>
-    </div>
-</div>
+<h1 class="text-center">
+    <?php if($titulo === 'TODAS'): ?>
+        Listado de Todas las Faltas
+    <?php else: ?>
+        Listado de Faltas <?= $titulo ?>
+    <?php endif; ?>
+</h1>
 
 <div class="row mb-4">
     <div class="col table-responsive">
         <table class="table table-bordered table-hover w-100" id="tablaFalta">
-            <thead class="bg-dark text-white">
+            <thead class="table-dark">
                 <tr>
                     <th>No.</th>
                     <th>Tipo</th>
                     <th>Categoría</th>
                     <th>Descripción</th>
                     <th>Sanción</th>
-                    <th>Acciones</th>
                 </tr>
             </thead>
+            <tbody></tbody>
         </table>
     </div>
 </div>

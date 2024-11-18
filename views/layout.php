@@ -11,7 +11,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler">
             <span class="navbar-toggler-icon"></span>
         </button>
         <a class="navbar-brand" href="/control_arresto/">
@@ -20,40 +20,60 @@
         <div class="collapse navbar-collapse" id="navbarToggler">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-gear me-2"></i> Opciones
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear me-2"></i>REGISTROS
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
+                    <ul class="dropdown-menu dropdown-menu-dark">
                         <li>
                             <a class="dropdown-item" href="/control_arresto/instructor">
-                                <i class="ms-2 bi bi-plus-circle me-2"></i> Registrar Instructores
+                                <i class="bi bi-person-plus me-2"></i>Registrar Instructores
+                            </a>
+                            <a class="dropdown-item" href="/control_arresto/instructor">
+                                <i class="bi bi-person-plus me-2"></i>Registrar Catedraticos
+                            </a>
+                            <a class="dropdown-item" href="/control_arresto/instructor">
+                                <i class="bi bi-person-plus me-2"></i>Registrar Alumnos
                             </a>
                         </li>
                     </ul>
                 </div>
-            </ul>
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-gear me-2"></i> Tipos de Falta
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-exclamation-triangle me-2"></i>SANCIONES
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
+                    <ul class="dropdown-menu dropdown-menu-dark">
                         <li>
-                            <a class="dropdown-item" href="/control_arresto/tipo_falta">
-                                <i class="ms-2 bi bi-plus-circle me-2"></i> Faltas Leves
+                            <a class="dropdown-item" href="/control_arresto/falta?tipo=LEVE">
+                                <i class="bi bi-info-circle me-2"></i>Faltas Leves
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="/control_arresto/falta?tipo=GRAVE">
+                                <i class="bi bi-exclamation-circle me-2"></i>Faltas Graves
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="/control_arresto/falta?tipo=GRAVISIMAS">
+                                <i class="bi bi-exclamation-diamond me-2"></i>Faltas Gravísimas
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="/control_arresto/falta">
+                                <i class="bi bi-card-list me-2"></i>Todas las Faltas
                             </a>
                         </li>
                     </ul>
                 </div>
             </ul>
             <div class="col-lg-1 d-grid mb-lg-0 mb-2">
-                <!-- Ruta relativa desde el archivo donde se incluye menu.php -->
-                <a href="/menu/" class="btn btn-danger"><i class="bi bi-arrow-bar-left"></i> MENÚ</a>
+                <a href="/menu/" class="btn btn-danger">
+                    <i class="bi bi-arrow-bar-left"></i> MENÚ
+                </a>
             </div>
         </div>
     </div>
 </nav>
-
 <div class="progress fixed-bottom" style="height: 6px;">
     <div class="progress-bar progress-bar-animated bg-danger" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
 </div>
