@@ -31,7 +31,7 @@
                             <a class="dropdown-item" href="/control_arresto/instructor">
                                 <i class="bi bi-person-plus me-2"></i>Registrar Catedraticos
                             </a>
-                            <a class="dropdown-item" href="/control_arresto/instructor">
+                            <a class="dropdown-item" href="/control_arresto/alumno">
                                 <i class="bi bi-person-plus me-2"></i>Registrar Alumnos
                             </a>
                         </li>
