@@ -6,6 +6,7 @@ use MVC\Router;
 use Controllers\AppController;
 use Controllers\FaltaController;
 use Controllers\InstructorController;
+use Controllers\SancionController;
 
 $router = new Router();
 $router->setBaseURL('/' . $_ENV['APP_NAME']);
@@ -31,6 +32,13 @@ $router->get('/falta', [FaltaController::class, 'index']);
 $router->post('/API/falta/guardar', [FaltaController::class, 'guardarAPI']);
 $router->get('/API/falta/buscar', [FaltaController::class, 'buscarAPI']);
 $router->post('/API/falta/eliminar', [FaltaController::class, 'eliminarAPI']);
+
+//REGISTRAR ARRESTO
+//TODAS LAS SANCIONES
+$router->get('/sancion', [SancionController::class, 'index']);
+$router->post('/API/sancion/guardar', [SancionController::class, 'guardarAPI']);
+$router->get('/API/sancion/buscar', [SancionController::class, 'buscarAPI']);
+$router->post('/API/sancion/eliminar', [SancionController::class, 'eliminarAPI']);
 
 // Comprueba y valida las rutas, que existan y les asigna las funciones del Controlador
 $router->comprobarRutas();

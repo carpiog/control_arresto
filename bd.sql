@@ -11,12 +11,6 @@ CREATE TABLE car_tipo_falta (
     tip_descripcion VARCHAR(255) NOT NULL,
     tip_situacion SMALLINT DEFAULT 1
 );
-INSERT INTO car_tipo_falta (tip_nombre, tip_descripcion) 
-VALUES ('LEVE', 'Quebrantamiento de una norma que lesiona la disciplina');
-INSERT INTO car_tipo_falta (tip_nombre, tip_descripcion) 
-VALUES ('GRAVE', 'Quebrantamiento que lesiona el orden y disciplina');
-INSERT INTO car_tipo_falta (tip_nombre, tip_descripcion) 
-VALUES ('GRAVISIMAS', 'Quebrantamiento que amerita baja definitiva');
 
 CREATE TABLE car_categoria_falta (
     cat_id SERIAL PRIMARY KEY,
@@ -26,6 +20,92 @@ CREATE TABLE car_categoria_falta (
     cat_situacion SMALLINT DEFAULT 1
 );
 
+CREATE TABLE car_falta (
+    fal_id SERIAL PRIMARY KEY,
+    fal_categoria_id INTEGER NOT NULL REFERENCES car_categoria_falta(cat_id),
+    fal_descripcion VARCHAR(255) NOT NULL,
+    fal_horas_arresto SMALLINT,  -- Para faltas leves
+    fal_demeritos SMALLINT,      -- Para faltas graves
+    fal_dem_retiro VARCHAR(20),  -- Para casos que pueden ser "Demeritos" o "RETIRO"
+    fal_situacion SMALLINT DEFAULT 1
+);
+
+CREATE TABLE car_alumno (
+    alu_id SERIAL PRIMARY KEY,
+    alu_primer_nombre VARCHAR(50) NOT NULL,
+    alu_segundo_nombre VARCHAR(50),
+    alu_primer_apellido VARCHAR(50) NOT NULL,
+    alu_segundo_apellido VARCHAR(50),
+    alu_catalogo INTEGER NOT NULL,
+    alu_grado_id INTEGER NOT NULL,
+    alu_rango_id INTEGER NOT NULL,
+    alu_situacion INTEGER DEFAULT 1,
+    FOREIGN KEY (alu_grado_id) REFERENCES car_grado_academico(gra_id),
+    FOREIGN KEY (alu_rango_id) REFERENCES car_rango(ran_id)
+);
+
+CREATE TABLE car_grado_academico (
+    gra_id SERIAL PRIMARY KEY,
+    gra_nombre VARCHAR(50) NOT NULL,
+    gra_nivel VARCHAR(50) NOT NULL,
+    gra_orden SMALLINT NOT NULL, 
+    gra_situacion SMALLINT DEFAULT 1
+);
+
+CREATE TABLE car_rango (
+    ran_id SERIAL PRIMARY KEY,
+    ran_nombre VARCHAR(100) NOT NULL,
+    ran_situacion INTEGER DEFAULT 1
+);
+
+CREATE TABLE car_sancion (
+    san_id SERIAL PRIMARY KEY,
+    san_catalogo INTEGER NOT NULL,
+    san_fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    san_fecha_sancion DATE NOT NULL, 
+    san_falta_id INTEGER NOT NULL,
+    san_instructor_ordena INTEGER NOT NULL,
+    san_horas_arresto INTEGER, -- Para cuando es arresto
+    san_demeritos INTEGER, -- Para cuando son deméritos
+    san_observaciones VARCHAR(200),
+    san_situacion INTEGER DEFAULT 1,
+    FOREIGN KEY (san_catalogo) REFERENCES car_alumno(alu_catalogo),
+    FOREIGN KEY (san_falta_id) REFERENCES car_falta(fal_id),
+    FOREIGN KEY (san_instructor_ordena) REFERENCES car_instructor(ins_id)
+);
+
+CREATE TABLE car_cumplimiento_arresto (
+    cum_id SERIAL PRIMARY KEY,
+    cum_sancion_id INTEGER NOT NULL REFERENCES car_sancion(san_id),
+    cum_fecha DATE NOT NULL,
+    cum_estado CHAR(1) NOT NULL DEFAULT 'P', -- P: Pendiente, E: En proceso, C: Cumplido, T: Trasladado, A: Anulado
+    cum_horas_cumplidas INTEGER DEFAULT 0,    -- Este es el correcto
+    cum_horas_pendientes INTEGER DEFAULT 0,
+    cum_fin_semana_inicio DATE, -- Fecha del sábado que inicia a cumplir
+    cum_fin_semana_siguiente DATE, -- En caso de pasar a siguiente fin de semana
+    cum_instructor_supervisa INTEGER NOT NULL REFERENCES car_instructor(ins_id),
+    cum_observaciones TEXT,
+    cum_situacion SMALLINT DEFAULT 1
+);
+
+
+-- Tabla para el control de deméritos acumulados
+CREATE TABLE car_demeritos_acumulados (
+    dem_id SERIAL PRIMARY KEY,
+    dem_alumno_id INTEGER NOT NULL REFERENCES car_alumno(alu_id),
+    dem_ciclo_escolar INTEGER NOT NULL,
+    dem_total_demeritos INTEGER DEFAULT 0,
+    dem_ultima_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dem_situacion SMALLINT DEFAULT 1
+);
+
+
+iNSERT INTO car_tipo_falta (tip_nombre, tip_descripcion) 
+VALUES ('LEVE', 'Quebrantamiento de una norma que lesiona la disciplina');
+INSERT INTO car_tipo_falta (tip_nombre, tip_descripcion) 
+VALUES ('GRAVE', 'Quebrantamiento que lesiona el orden y disciplina');
+INSERT INTO car_tipo_falta (tip_nombre, tip_descripcion) 
+VALUES ('GRAVISIMAS', 'Quebrantamiento que amerita baja definitiva');
 -- Inserciones para faltas LEVES
 INSERT INTO car_categoria_falta (cat_tipo_id, cat_nombre, cat_descripcion) 
 SELECT tip_id, 'HIGIENE PERSONAL', 'Faltas relacionadas con aseo y presentación personal'
@@ -111,17 +191,8 @@ FROM car_tipo_falta WHERE tip_nombre = 'GRAVE';
 -- Inserción para faltas GRAVISIMAS
 INSERT INTO car_categoria_falta (cat_tipo_id, cat_nombre, cat_descripcion) 
 SELECT tip_id, 'FALTAS GRAVISIMAS', 'Faltas que ameritan baja definitiva'
-FROM car_tipo_falta WHERE tip_nombre = 'GRAVISIMA';
+FROM car_tipo_falta WHERE tip_nombre = 'GRAVISIMAS';
 
-CREATE TABLE car_falta (
-    fal_id SERIAL PRIMARY KEY,
-    fal_categoria_id INTEGER NOT NULL REFERENCES car_categoria_falta(cat_id),
-    fal_descripcion VARCHAR(255) NOT NULL,
-    fal_horas_arresto SMALLINT,  -- Para faltas leves
-    fal_demeritos SMALLINT,      -- Para faltas graves
-    fal_dem_retiro VARCHAR(20),  -- Para casos que pueden ser "Demeritos" o "RETIRO"
-    fal_situacion SMALLINT DEFAULT 1
-);
 -- Higiene Personal
 INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_horas_arresto) 
 SELECT cat_id, 'No bañarse', 4 FROM car_categoria_falta WHERE cat_nombre = 'HIGIENE PERSONAL';
@@ -512,6 +583,188 @@ SELECT cat_id, 'Reincidente en copiar durante un examen', 50 FROM car_categoria_
 INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos) 
 SELECT cat_id, 'Segunda reincidencia en copiar durante un examen', 100 FROM car_categoria_falta WHERE cat_nombre = 'EXAMENES';
 
+select * from car_categoria_falta 
 --GRAVISIMAS
--- Faltas gravísimas con sanciones variables (30 deméritos, 50 deméritos o RETIRO)
--- Negarse a cumplir una orden de Galonista, Catedrático u Oficial
+-- Faltas gravísimas donde la sanción depende de la gravedad
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Negarse a cumplir una orden de Galonista, Catedrático u Oficial', 30, '50 deméritos'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Falta de respeto a sus superiores (Galonistas, Catedráticos u Oficiales)', 30, '50 deméritos RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Insubordinarse a un Galonista, Catedrático u Oficial', 30, '50 deméritos'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Ingerir bebidas alcohólicas', 40, '100 deméritos'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Cometer actos que están contra el prestigio del Centro de Educación Media/Vocacional', 30, '50 deméritos RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+-- Faltas relacionadas con evasión (progresión de sanciones)
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos)
+SELECT cat_id, 'Evadirse del establecimiento', 30
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Reincidente en evadirse del establecimiento', 50, 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Segunda reincidencia en evadirse del establecimiento', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+-- Faltas con sanciones variables
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Lesionar la dignidad de una señorita o caballero alumno', 30, '50 deméritos RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Hacer peticiones en conjunto', 30, 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+-- Faltas relacionadas con armamento
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos, fal_dem_retiro)
+SELECT cat_id, 'Tener armas ajenas a las de su equipo', 25, 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos)
+SELECT cat_id, 'Maniobrar un arma imprudentemente', 20
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos)
+SELECT cat_id, 'Disparar un arma imprudentemente', 20
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_demeritos)
+SELECT cat_id, 'Extravío de piezas de armamento', 30
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+-- Faltas que ameritan retiro directo
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Pérdida de armamento, se procederá con el trámite administrativo para deducir responsabilidades legales', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Alterar cualquier documento o extraerlo de las oficinas del establecimiento', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Formar parte de asociaciones políticas', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Asistir a reuniones o manifestaciones políticas', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Hacer propaganda de carácter político', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Aplicar antigüedad lesiva a las señoritas y caballeros alumnos', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Insultar a sus superiores o faltas de respeto en público', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Actos inmorales (lujuria)', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Robar o hurtar', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Consumir o tenencia de drogas', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Tener relaciones sexuales en el establecimiento', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Portar material impreso o digital que incite a la violencia o que contenga pornografía', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Mala utilización de las redes sociales (ciberbullying, grooming y sexting)', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Contraer matrimonio, unión de hecho o cohabitar', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Faltas graves a las buenas costumbres', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Practicarse legrado', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+INSERT INTO car_falta (fal_categoria_id, fal_descripcion, fal_dem_retiro)
+SELECT cat_id, 'Tener medicamentos no autorizados', 'RETIRO'
+FROM car_categoria_falta WHERE cat_nombre = 'FALTAS GRAVISIMAS';
+
+
+
+-- Insertar grados académicos en el orden correcto
+INSERT INTO car_grado_academico (gra_nombre, gra_orden) 
+VALUES('PRIMERO BASICO', 1);
+INSERT INTO car_grado_academico (gra_nombre, gra_orden) 
+VALUES('SEGUNDO BASICO', 2);
+INSERT INTO car_grado_academico (gra_nombre, gra_orden) 
+VALUES('TERCERO BASICO', 3);
+INSERT INTO car_grado_academico (gra_nombre, gra_orden) 
+VALUES('CUARTO BACHILLERATO', 4);
+INSERT INTO car_grado_academico (gra_nombre, gra_orden) 
+VALUES('QUINTO BACHILLERATO', 5);
+
+
+INSERT INTO car_rango (ran_nombre) 
+VALUES('ASPIRANTE A CABALLERO ALUMNO');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('ASPIRANTE A DAMA ALUMNA');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('CABALLERO ALUMNO');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('DAMA ALUMNA');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('CABO DRAGON');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('CABO EFECTIVO');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('SARGENTO SEGUNDO DRAGON');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('SARGENTO SEGUNDO EFECTIVO');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('SARGENTO PRIMERO DRAGON');
+INSERT INTO car_rango (ran_nombre) 
+VALUES('SARGENTO PRIMERO EFECTIVO');
+
+
+SELECT 
+    a.alu_catalogo,
+    g.gra_nombre AS grado_nombre,
+    r.ran_nombre AS rango_nombre,
+    a.alu_primer_nombre || ' ' || a.alu_segundo_nombre || ' ' || a.alu_primer_apellido || ' ' || a.alu_segundo_apellido AS nombres_completos
+FROM 
+    car_alumno a
+JOIN 
+    car_grado_academico g ON a.alu_grado_id = g.gra_id
+JOIN 
+    car_rango r ON a.alu_rango_id = r.ran_id
+WHERE 
+    a.alu_situacion = 1
+ORDER BY 
+    g.gra_orden ASC;
+    
+   

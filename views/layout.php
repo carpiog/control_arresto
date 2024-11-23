@@ -28,18 +28,18 @@
                             <a class="dropdown-item" href="/control_arresto/instructor">
                                 <i class="bi bi-person-plus me-2"></i>Registrar Instructores
                             </a>
-                            <a class="dropdown-item" href="/control_arresto/instructor">
-                                <i class="bi bi-person-plus me-2"></i>Registrar Catedraticos
-                            </a>
                             <a class="dropdown-item" href="/control_arresto/alumno">
                                 <i class="bi bi-person-plus me-2"></i>Registrar Alumnos
+                            </a>
+                            <a class="dropdown-item" href="/control_arresto/sancion">
+                                <i class="bi bi-person-plus me-2"></i>Registrar Arresto
                             </a>
                         </li>
                     </ul>
                 </div>
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="bi bi-exclamation-triangle me-2"></i>SANCIONES
+                        <i class="bi bi-exclamation-triangle me-2"></i>TIPOS DE FALTA
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark">
                         <li>

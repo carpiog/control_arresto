@@ -8,7 +8,8 @@ module.exports = {
     'js/instructor/index': './src/js/instructor/index.js',
     'js/falta/index': './src/js/falta/index.js',
     'js/alumno/index': './src/js/alumno/index.js',
-  },
+    'js/sancion/index': './src/js/sancion/index.js',
+},
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'public/build')
