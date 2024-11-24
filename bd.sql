@@ -69,7 +69,7 @@ CREATE TABLE car_sancion (
     san_demeritos INTEGER, -- Para cuando son deméritos
     san_observaciones VARCHAR(200),
     san_situacion INTEGER DEFAULT 1,
-    FOREIGN KEY (san_catalogo) REFERENCES car_alumno(alu_catalogo),
+    FOREIGN KEY (san_catalogo) REFERENCES car_alumno(alu_id),
     FOREIGN KEY (san_falta_id) REFERENCES car_falta(fal_id),
     FOREIGN KEY (san_instructor_ordena) REFERENCES car_instructor(ins_id)
 );

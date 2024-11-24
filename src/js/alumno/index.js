@@ -17,11 +17,9 @@ btnCancelar.disabled = true;
 
 // Inicialización del DataTable
 const datatable = new DataTable('#tablaAlumno', {
-    data: null,
     language: lenguaje,
     pageLength: 15,
     lengthMenu: [3, 9, 11, 25, 100],
-    order: [[2, 'asc'], [1, 'asc']], // Ordenar por grado y luego por catálogo
     columns: [
         {
             title: 'No.',
@@ -53,7 +51,7 @@ const datatable = new DataTable('#tablaAlumno', {
         },
         {
             title: 'Acciones',
-            data: 'alu_id',  // Este es el ID que se utilizará para el dataset
+            data: 'alu_id', 
             searchable: false,
             orderable: false,
             render: (data, type, row) => {
@@ -230,50 +228,76 @@ const modificar = async (e) => {
     }
 };
 
-// Función para eliminar alumno
 const eliminar = async (e) => {
-    const id = e.target.closest('.eliminar').dataset.id;
-    if (!id) return;
+    try {
+        // Obtener el botón eliminar directamente
+        const botonEliminar = e.target.closest('.eliminar');
+        if (!botonEliminar) return;
 
-    const result = await Swal.fire({
-        title: '¿Está seguro?',
-        text: "Esta acción no se puede revertir",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    });
+        const id = botonEliminar.getAttribute('data-alu_id');
+        
+        if (!id) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Error: ID no encontrado'
+            });
+            return;
+        }
 
-    if (result.isConfirmed) {
-        const body = new FormData();
-        body.append('alu_id', id);
-
-        const url = "/control_arresto/API/alumno/eliminar";
-        const response = await fetch(url, { method: 'POST', body });
-
-        const data = await response.json();
-
-        Toast.fire({
-            icon: data.codigo === 1 ? 'success' : 'error',
-            title: data.mensaje
+        const result = await Swal.fire({
+            title: '¿Está seguro?',
+            text: "Esta acción no se puede revertir",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
         });
 
-        if (data.codigo === 1) {
-            await buscar();
+        if (result.isConfirmed) {
+            const formData = new FormData();
+            formData.append('alu_id', id);
+
+            const respuesta = await fetch("/control_arresto/API/alumno/eliminar", {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!respuesta.ok) {
+                throw new Error(`HTTP error! status: ${respuesta.status}`);
+            }
+
+            const data = await respuesta.json();
+            
+            Toast.fire({
+                icon: data.codigo === 1 ? 'success' : 'error',
+                title: data.mensaje || 'Error al procesar la solicitud'
+            });
+
+            if (data.codigo === 1) {
+                await buscar();
+            }
         }
+    } catch (error) {
+        console.error('Error al eliminar:', error);
+        Toast.fire({
+            icon: 'error',
+            title: 'Error al eliminar el alumno'
+        });
     }
-};
+}
 
 // Event Listeners
 formulario.addEventListener('submit', guardar);
 btnModificar.addEventListener('click', modificar);
 btnCancelar.addEventListener('click', cancelar);
+// Modificar el event listener para pasar el evento correctamente
 document.querySelector('#tablaAlumno').addEventListener('click', (e) => {
     if (e.target.closest('.modificar')) {
         traerDatos(e);
     } else if (e.target.closest('.eliminar')) {
+        // Pasar el evento directamente
         eliminar(e);
     }
 });

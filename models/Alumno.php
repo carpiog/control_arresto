@@ -87,4 +87,10 @@ class Alumno extends ActiveRecord
 
         return self::fetchArray($sql);
     }
+        // En lugar de eliminar físicamente, actualizamos la situación a 0
+        public function eliminar()
+        {
+            $this->alu_situacion = 0;
+            return $this->actualizar();
+        }
 }
