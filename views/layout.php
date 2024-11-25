@@ -65,6 +65,20 @@
                         </li>
                     </ul>
                 </div>
+
+                <!-- Nuevo Dropdown para "DEMERITOS" -->
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-trophy me-2"></i>DEMERITOS
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li>
+                            <a class="dropdown-item" href="/control_arresto/demerito">
+                                <i class="bi bi-list me-2"></i>Ver Demeritos
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </ul>
             <div class="col-lg-1 d-grid mb-lg-0 mb-2">
                 <a href="/menu/" class="btn btn-danger">

@@ -1,3 +1,4 @@
+import { Dropdown } from "bootstrap";
 import { Toast } from "../funciones";
 import DataTable from "datatables.net-bs5";
 import { lenguaje } from "../lenguaje";
